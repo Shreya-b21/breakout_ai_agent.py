@@ -1,0 +1,63 @@
+
+import random
+
+class BreakoutAIAgent:
+    def __init__(self, difficulty='medium'):
+        self.state = {}
+        self.difficulty = difficulty
+
+    def perceive(self, environment):
+        self.state = environment
+
+    def predict_ball_position(self):
+        ball_x, ball_y = self.state['ball']
+        ball_dx, ball_dy = self.state['ball_velocity']
+        paddle_y = self.state['paddle'][1]
+
+        # Predict where the ball will be when it reaches the paddle's y-position
+        time_to_paddle = (paddle_y - ball_y) / ball_dy if ball_dy != 0 else 0
+        predicted_x = ball_x + ball_dx * time_to_paddle
+
+        return predicted_x
+
+    def think(self):
+        paddle_x, paddle_y = self.state['paddle']
+        paddle_width = self.state['paddle_width']
+        predicted_x = self.predict_ball_position()
+
+        # Add some randomness based on difficulty
+        if self.difficulty == 'easy':
+            predicted_x += random.uniform(-20, 20)
+        elif self.difficulty == 'medium':
+            predicted_x += random.uniform(-10, 10)
+
+        paddle_center = paddle_x + paddle_width / 2
+
+        if predicted_x < paddle_center - 5:
+            return 'move_left'
+        elif predicted_x > paddle_center + 5:
+            return 'move_right'
+        else:
+            return 'stay'
+
+    def act(self):
+        action = self.think()
+        print(f"Agent performs action: {action}")
+        return action
+
+# Example usage
+if __name__ == "__main__":
+    agent = BreakoutAIAgent(difficulty='medium')
+
+    # Simulate different scenarios
+    scenarios = [
+        {"ball": (50, 30), "ball_velocity": (2, 3), "paddle": (40, 190), "paddle_width": 30},
+        {"ball": (150, 50), "ball_velocity": (-3, 4), "paddle": (100, 190), "paddle_width": 30},
+        {"ball": (75, 100), "ball_velocity": (1, 2), "paddle": (60, 190), "paddle_width": 30},
+    ]
+
+    for i, scenario in enumerate(scenarios):
+        print(f"Scenario {i + 1}:")
+        agent.perceive(scenario)
+        agent.act()
+        print()
